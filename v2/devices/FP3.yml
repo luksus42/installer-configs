@@ -52,13 +52,27 @@ operating_systems:
     prerequisites: []
     steps:
       - actions:
+          # latest artifacts from https://gitlab.com/ubports/porting/community-ports/android10/fairphone/fairphone_fp3
           - core:download:
               group: "firmware"
               files:
-                - url: "https://gitlab.com/ubports/porting/community-ports/android10/fairphone/fairphone_fp3/-/jobs/2902188165/artifacts/raw/out/boot.img"
-                  checksum:
-                    sum: "980eb17fc4f2e9a70fe6728d0ae819d0bae3135ec88487e038df138ee0ecfc4e"
-                    algorithm: "sha256"
+                - url: "https://gitlab.com/api/v4/projects/22012040/jobs/artifacts/halium-10.0-focal/download?job=build"
+                  name: "artifacts.zip"
+          - core:unpack:
+              group: "firmware"
+              files:
+                - archive: "artifacts.zip"
+                  dir: "unpacked"
+          - core:unpack:
+              group: "firmware"
+              files:
+                - archive: "unpacked/out/device_FP3.tar.xz"
+                  dir: "unpacked"
+          - core:unpack:
+              group: "firmware"
+              files:
+                - archive: "unpacked/device_FP3.tar"
+                  dir: "unpacked"
         condition:
           var: "bootstrap"
           value: true
@@ -72,10 +86,15 @@ operating_systems:
           var: "bootstrap"
           value: true
       - actions:
+          - fastboot:wait:
+        condition:
+          var: "bootstrap"
+          value: true
+      - actions:
           - fastboot:flash:
               partitions:
                 - partition: "boot"
-                  file: "boot.img"
+                  file: "unpacked/partitions/boot.img"
                   group: "firmware"
                   raw: true
         condition:
